@@ -10,7 +10,8 @@
     "test": "cross-env NODE_ENV=test jest --runInBand",
     "test:unit": "cross-env NODE_ENV=test jest tests/unit",
     "test:coverage": "cross-env NODE_ENV=test jest --runInBand --coverage",
-    "test:integration": "cross-env NODE_ENV=test jest tests/integration --runInBand"
+    "test:integration": "cross-env NODE_ENV=test jest tests/integration --runInBand",
+    "test:api": "npx -y -p newman@6 -p newman-reporter-htmlextra@1 newman run postman/CanchaYa.postman_collection.json -e postman/CanchaYa-local.postman_environment.json -r cli,htmlextra --reporter-htmlextra-export reports/newman/reporte-api.html"
   },
   "keywords": [],
   "author": "",
