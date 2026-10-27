@@ -15,8 +15,8 @@ const seed = async () => {
   await Promise.all([Reserva.deleteMany(), Cancha.deleteMany(), User.deleteMany()]);
 
   const [cliente, admin] = await User.create([
-    { nombre: 'Cliente Demo', email: 'cliente@canchaya.com', rol: 'cliente' },
-    { nombre: 'Admin Demo', email: 'admin@canchaya.com', rol: 'admin' },
+    { nombre: 'Cliente Demo', email: 'cliente@canchaya.com', password: 'Cliente123!', rol: 'cliente' },
+    { nombre: 'Admin Demo', email: 'admin@canchaya.com', password: 'Admin123!', rol: 'admin' },
   ]);
 
   const canchas = await Cancha.create([
@@ -27,8 +27,8 @@ const seed = async () => {
   ]);
 
   console.log('\nDatos cargados. Copia estos IDs para tus pruebas:');
-  console.log(`  Cliente: ${cliente._id}`);
-  console.log(`  Admin:   ${admin._id}`);
+  console.log(`  Cliente: ${cliente._id}  (cliente@canchaya.com / Cliente123!)`);
+  console.log(`  Admin:   ${admin._id}  (admin@canchaya.com / Admin123!)`);
   canchas.forEach((c) => console.log(`  Cancha "${c.nombre}" (${c.deporte}): ${c._id}`));
 };
 
