@@ -48,9 +48,14 @@ const crear = async ({ usuario, cancha: canchaId, fecha, horaInicio, horaFin }) 
   });
 };
 
-const listar = (filtros = {}) => {
+// Un cliente solo ve sus reservas; el admin puede ver todas y filtrar por usuario
+const listar = (filtros = {}, solicitante) => {
   const query = {};
-  if (filtros.usuario) query.usuario = filtros.usuario;
+  if (solicitante && solicitante.rol !== 'admin') {
+    query.usuario = solicitante.id;
+  } else if (filtros.usuario) {
+    query.usuario = filtros.usuario;
+  }
   if (filtros.cancha) query.cancha = filtros.cancha;
   if (filtros.estado) query.estado = filtros.estado;
 
@@ -60,9 +65,13 @@ const listar = (filtros = {}) => {
     .sort({ fecha: 1, horaInicio: 1 });
 };
 
-const cancelar = async (id) => {
+// Solo el dueño de la reserva o un admin pueden cancelarla
+const cancelar = async (id, solicitante) => {
   const reserva = await Reserva.findById(id);
   if (!reserva) throw new AppError('Reserva no encontrada', 404);
+  if (solicitante && solicitante.rol !== 'admin' && reserva.usuario.toString() !== solicitante.id) {
+    throw new AppError('No puedes cancelar una reserva de otro usuario', 403);
+  }
   if (reserva.estado === 'cancelada') throw new AppError('La reserva ya está cancelada', 400);
 
   reserva.estado = 'cancelada';
