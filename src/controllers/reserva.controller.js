@@ -8,8 +8,11 @@ const crear = async (req, res) => {
 };
 
 const listar = async (req, res) => {
-  const reservas = await reservaService.listar(matchedData(req, { locations: ['query'] }), req.user);
-  res.json({ success: true, total: reservas.length, data: reservas });
+  const { data, total, pagina, limite, paginas } = await reservaService.listar(
+    matchedData(req, { locations: ['query'] }),
+    req.user
+  );
+  res.json({ success: true, total, pagina, limite, paginas, data });
 };
 
 const cancelar = async (req, res) => {

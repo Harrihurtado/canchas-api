@@ -1576,6 +1576,13 @@
                   "});",
                   "pm.test(\"Cada reserva trae los datos de la cancha\", () => {",
                   "    json.data.forEach(r => pm.expect(r.cancha).to.have.property(\"nombre\"));",
+                  "});",
+                  "pm.test(\"La respuesta viene paginada (máximo 20 por defecto)\", () => {",
+                  "    pm.expect(json).to.include.keys(\"total\", \"pagina\", \"limite\", \"paginas\");",
+                  "    pm.expect(json.pagina).to.eql(1);",
+                  "    pm.expect(json.limite).to.eql(20);",
+                  "    pm.expect(json.data.length).to.be.at.most(json.limite);",
+                  "    pm.expect(json.paginas).to.eql(Math.ceil(json.total / json.limite));",
                   "});"
                 ]
               }
@@ -1596,6 +1603,102 @@
               ],
               "path": [
                 "reservas"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Listar mis reservas con límite de 1",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200\", () => pm.response.to.have.status(200));",
+                  "const json = pm.response.json();",
+                  "pm.test(\"Respeta el límite pedido\", () => {",
+                  "    pm.expect(json.data).to.have.lengthOf(1);",
+                  "    pm.expect(json.limite).to.eql(1);",
+                  "    pm.expect(json.paginas).to.eql(json.total);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenCliente}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/reservas?limite=1&pagina=1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "reservas"
+              ],
+              "query": [
+                {
+                  "key": "limite",
+                  "value": "1"
+                },
+                {
+                  "key": "pagina",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Listar reservas con un límite excesivo",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 400 Bad Request\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"El error tiene el formato estándar { success:false, message }\", () => {",
+                  "    pm.response.to.have.jsonSchema({",
+                  "        type: \"object\",",
+                  "        required: [\"success\", \"message\"],",
+                  "        properties: { success: { const: false }, message: { type: \"string\", minLength: 1 } }",
+                  "    });",
+                  "});",
+                  "pm.test(\"No permite pedir más de 100 resultados por página\", () => {",
+                  "    pm.expect(pm.response.json().details[0].campo).to.eql(\"limite\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenCliente}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/reservas?limite=5000",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "reservas"
+              ],
+              "query": [
+                {
+                  "key": "limite",
+                  "value": "5000"
+                }
               ]
             }
           }
