@@ -4,6 +4,7 @@ jest.mock('../../../src/models/reserva.model', () => ({
   create: jest.fn(),
   find: jest.fn(),
   findById: jest.fn(),
+  countDocuments: jest.fn(),
 }));
 jest.mock('../../../src/models/cancha.model', () => ({ findById: jest.fn() }));
 jest.mock('../../../src/models/user.model', () => ({ findById: jest.fn() }));
@@ -116,18 +117,23 @@ describe('reserva.service', () => {
   });
 
   describe('listar', () => {
-    const mockConsulta = () => {
-      const sort = jest.fn().mockResolvedValue([]);
-      const populate2 = jest.fn().mockReturnValue({ sort });
-      const populate1 = jest.fn().mockReturnValue({ populate: populate2 });
-      Reserva.find.mockReturnValue({ populate: populate1 });
-      return { populate1, populate2, sort };
+    // Simula la cadena find().populate().populate().sort().skip().limit().lean()
+    const mockConsulta = (resultado = [], total = 0) => {
+      const cadena = {};
+      ['populate', 'sort', 'skip', 'limit'].forEach((metodo) => {
+        cadena[metodo] = jest.fn().mockReturnValue(cadena);
+      });
+      cadena.lean = jest.fn().mockResolvedValue(resultado);
+      Reserva.find.mockReturnValue(cadena);
+      Reserva.countDocuments.mockResolvedValue(total);
+      return cadena;
     };
 
     test('un cliente solo ve sus reservas aunque pida las de otro usuario', async () => {
       mockConsulta();
       await reservaService.listar({ usuario: OTRO_USUARIO }, { id: USUARIO, rol: 'cliente' });
       expect(Reserva.find).toHaveBeenCalledWith({ usuario: USUARIO });
+      expect(Reserva.countDocuments).toHaveBeenCalledWith({ usuario: USUARIO });
     });
 
     test('un admin puede filtrar por cualquier usuario, cancha y estado', async () => {
@@ -139,14 +145,43 @@ describe('reserva.service', () => {
       expect(Reserva.find).toHaveBeenCalledWith({ usuario: OTRO_USUARIO, cancha: CANCHA, estado: 'pendiente' });
     });
 
-    test('un admin sin filtros ve todas las reservas, con cancha y usuario poblados', async () => {
-      const { populate1, populate2, sort } = mockConsulta();
+    test('pobla cancha y usuario, ordena por fecha y hora y devuelve objetos planos (lean)', async () => {
+      const cadena = mockConsulta();
       await reservaService.listar({}, { id: USUARIO, rol: 'admin' });
 
       expect(Reserva.find).toHaveBeenCalledWith({});
-      expect(populate1).toHaveBeenCalledWith('cancha', expect.any(String));
-      expect(populate2).toHaveBeenCalledWith('usuario', 'nombre email');
-      expect(sort).toHaveBeenCalledWith({ fecha: 1, horaInicio: 1 });
+      expect(cadena.populate).toHaveBeenCalledWith('cancha', expect.any(String));
+      expect(cadena.populate).toHaveBeenCalledWith('usuario', 'nombre email');
+      expect(cadena.sort).toHaveBeenCalledWith({ fecha: 1, horaInicio: 1 });
+      expect(cadena.lean).toHaveBeenCalled();
+    });
+
+    // ---- Regresión del bug de rendimiento: el listado SIEMPRE va paginado ----
+    test('sin parámetros devuelve la página 1 con un máximo de 20 resultados', async () => {
+      const cadena = mockConsulta([], 45);
+
+      const resultado = await reservaService.listar({}, { id: USUARIO, rol: 'cliente' });
+
+      expect(cadena.skip).toHaveBeenCalledWith(0);
+      expect(cadena.limit).toHaveBeenCalledWith(20);
+      expect(resultado).toMatchObject({ total: 45, pagina: 1, limite: 20, paginas: 3 });
+    });
+
+    test('calcula el desplazamiento según la página y el límite pedidos', async () => {
+      const cadena = mockConsulta([], 45);
+
+      const resultado = await reservaService.listar({ pagina: 3, limite: 10 }, { id: USUARIO, rol: 'cliente' });
+
+      expect(cadena.skip).toHaveBeenCalledWith(20);
+      expect(cadena.limit).toHaveBeenCalledWith(10);
+      expect(resultado).toMatchObject({ pagina: 3, limite: 10, paginas: 5 });
+    });
+
+    test('devuelve los datos de la página y el total real, no el tamaño de la página', async () => {
+      mockConsulta([{ _id: 'r1' }, { _id: 'r2' }], 120);
+      const resultado = await reservaService.listar({}, { id: USUARIO, rol: 'cliente' });
+      expect(resultado.data).toHaveLength(2);
+      expect(resultado.total).toBe(120);
     });
   });
 

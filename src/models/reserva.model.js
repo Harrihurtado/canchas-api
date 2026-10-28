@@ -16,5 +16,7 @@ const reservaSchema = new mongoose.Schema(
 
 // Acelera la búsqueda de cruces de horario
 reservaSchema.index({ cancha: 1, fecha: 1 });
+// Acelera "mis reservas": filtra por usuario y ya viene ordenado por fecha y hora
+reservaSchema.index({ usuario: 1, fecha: 1, horaInicio: 1 });
 
 module.exports = mongoose.model('Reserva', reservaSchema);
