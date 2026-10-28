@@ -3,3 +3,6 @@ node_modules/
 .env.test
 .env.production
 coverage/
+reports/
+reports/
+jmeter/resultados/
