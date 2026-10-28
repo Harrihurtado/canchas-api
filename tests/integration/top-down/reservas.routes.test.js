@@ -91,15 +91,34 @@ describe('Top-down: POST /api/reservas', () => {
 
 describe('Top-down: GET /api/reservas y PATCH /api/reservas/:id/cancelar', () => {
   test('GET pasa al service los filtros validados y el usuario autenticado', async () => {
-    reservaService.listar.mockResolvedValue([{ _id: 'r1' }, { _id: 'r2' }]);
+    reservaService.listar.mockResolvedValue({ data: [{ _id: 'r1' }, { _id: 'r2' }], total: 2, pagina: 1, limite: 20, paginas: 1 });
 
     const res = await request(app)
       .get('/api/reservas?estado=pendiente&otro=ignorado')
       .set('Authorization', `Bearer ${token}`);
 
     expect(res.status).toBe(200);
-    expect(res.body.total).toBe(2);
+    expect(res.body).toMatchObject({ success: true, total: 2, pagina: 1, limite: 20, paginas: 1 });
     expect(reservaService.listar).toHaveBeenCalledWith({ estado: 'pendiente' }, { id: CLIENTE._id, rol: 'cliente' });
+  });
+
+  test('GET convierte pagina y limite de texto a número antes de llegar al service', async () => {
+    reservaService.listar.mockResolvedValue({ data: [], total: 0, pagina: 2, limite: 5, paginas: 0 });
+
+    await request(app).get('/api/reservas?pagina=2&limite=5').set('Authorization', `Bearer ${token}`);
+
+    expect(reservaService.listar).toHaveBeenCalledWith({ pagina: 2, limite: 5 }, { id: CLIENTE._id, rol: 'cliente' });
+  });
+
+  test.each([
+    ['limite mayor a 100', 'limite=5000'],
+    ['limite en cero', 'limite=0'],
+    ['pagina en cero', 'pagina=0'],
+    ['pagina no numérica', 'pagina=abc'],
+  ])('GET con %s responde 400 sin llamar al service', async (_caso, qs) => {
+    const res = await request(app).get(`/api/reservas?${qs}`).set('Authorization', `Bearer ${token}`);
+    expect(res.status).toBe(400);
+    expect(reservaService.listar).not.toHaveBeenCalled();
   });
 
   test('GET con un estado inválido responde 400', async () => {

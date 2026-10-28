@@ -15,6 +15,8 @@ const listarReservas = [
   query('usuario').optional().isMongoId().withMessage('usuario debe ser un ObjectId válido'),
   query('cancha').optional().isMongoId().withMessage('cancha debe ser un ObjectId válido'),
   query('estado').optional().isIn(ESTADOS_RESERVA).withMessage(`Estado inválido. Opciones: ${ESTADOS_RESERVA.join(', ')}`),
+  query('pagina').optional().isInt({ min: 1 }).withMessage('pagina debe ser un entero mayor o igual a 1').toInt(),
+  query('limite').optional().isInt({ min: 1, max: 100 }).withMessage('limite debe ser un entero entre 1 y 100').toInt(),
 ];
 
 module.exports = { idParam, crearReserva, listarReservas };

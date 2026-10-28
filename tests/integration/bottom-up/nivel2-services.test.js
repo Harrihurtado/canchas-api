@@ -57,7 +57,7 @@ describe('Bottom-up nivel 2: reserva.service + MongoDB (regla de cruces con dato
   });
 
   test('una reserva cancelada libera el horario', async () => {
-    const [existente] = await reservaService.listar({}, { id: cliente._id.toString(), rol: 'cliente' });
+    const { data: [existente] } = await reservaService.listar({}, { id: cliente._id.toString(), rol: 'cliente' });
     await driverCancelar(existente, cliente);
 
     await expect(driverReservar(cliente, cancha, '2026-11-01', '18:30', '19:30')).resolves.toBeDefined();
@@ -74,19 +74,65 @@ describe('Bottom-up nivel 2: reserva.service + MongoDB (regla de cruces con dato
   });
 
   test('listar devuelve la cancha y el usuario poblados desde la BD', async () => {
-    const [reserva] = await reservaService.listar({}, { id: cliente._id.toString(), rol: 'cliente' });
+    const { data: [reserva] } = await reservaService.listar({}, { id: cliente._id.toString(), rol: 'cliente' });
     expect(reserva.cancha.nombre).toBe(cancha.nombre);
     expect(reserva.usuario.email).toBe(cliente.email);
   });
 
   test('un cliente no puede cancelar la reserva de otro (y la reserva sigue activa)', async () => {
     const intruso = await crearUsuario();
-    const [reserva] = await reservaService.listar({}, { id: cliente._id.toString(), rol: 'cliente' });
+    const { data: [reserva] } = await reservaService.listar({}, { id: cliente._id.toString(), rol: 'cliente' });
 
     await expect(driverCancelar(reserva, intruso)).rejects.toMatchObject({ statusCode: 403 });
 
-    const [sinCambios] = await reservaService.listar({}, { id: cliente._id.toString(), rol: 'cliente' });
+    const { data: [sinCambios] } = await reservaService.listar({}, { id: cliente._id.toString(), rol: 'cliente' });
     expect(sinCambios.estado).toBe('pendiente');
+  });
+});
+
+describe('Bottom-up nivel 2: paginación del listado de reservas (regresión del bug de rendimiento)', () => {
+  let cliente;
+  const solicitante = () => ({ id: cliente._id.toString(), rol: 'cliente' });
+
+  beforeEach(async () => {
+    cliente = await crearUsuario();
+    const cancha = await crearCancha();
+    // 25 reservas en días distintos (en desorden, para comprobar el ordenamiento)
+    const dias = Array.from({ length: 25 }, (_, i) => 25 - i);
+    await Promise.all(
+      dias.map((d) => driverReservar(cliente, cancha, `2027-01-${String(d).padStart(2, '0')}`, '18:00', '19:00'))
+    );
+  });
+
+  test('por defecto devuelve solo 20 reservas, pero informa el total real', async () => {
+    const resultado = await reservaService.listar({}, solicitante());
+
+    expect(resultado.data).toHaveLength(20);
+    expect(resultado).toMatchObject({ total: 25, pagina: 1, limite: 20, paginas: 2 });
+  });
+
+  test('la página 2 trae las 5 restantes', async () => {
+    const resultado = await reservaService.listar({ pagina: 2 }, solicitante());
+    expect(resultado.data).toHaveLength(5);
+  });
+
+  test('las páginas vienen ordenadas por fecha y no se repiten reservas', async () => {
+    const p1 = await reservaService.listar({ limite: 10 }, solicitante());
+    const p2 = await reservaService.listar({ limite: 10, pagina: 2 }, solicitante());
+    const fechas = [...p1.data, ...p2.data].map((r) => r.fecha.toISOString().slice(0, 10));
+
+    expect(fechas[0]).toBe('2027-01-01');
+    expect(fechas).toEqual([...fechas].sort());
+    expect(new Set(fechas).size).toBe(20);
+  });
+
+  test('la consulta de "mis reservas" usa el índice por usuario (no recorre toda la colección)', async () => {
+    const Reserva = require('../../../src/models/reserva.model');
+    const plan = await Reserva.find({ usuario: cliente._id }).sort({ fecha: 1, horaInicio: 1 }).explain('queryPlanner');
+    const ganador = JSON.stringify(plan.queryPlanner.winningPlan);
+
+    expect(ganador).toContain('IXSCAN');
+    expect(ganador).toContain('usuario_1_fecha_1_horaInicio_1');
   });
 });
 

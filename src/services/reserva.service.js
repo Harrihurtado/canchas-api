@@ -48,8 +48,11 @@ const crear = async ({ usuario, cancha: canchaId, fecha, horaInicio, horaFin }) 
   });
 };
 
-// Un cliente solo ve sus reservas; el admin puede ver todas y filtrar por usuario
-const listar = (filtros = {}, solicitante) => {
+// Un cliente solo ve sus reservas; el admin puede ver todas y filtrar por usuario.
+// Resultados PAGINADOS: nunca se devuelve la colección completa (ver Bug de rendimiento).
+const LIMITE_POR_DEFECTO = 20;
+
+const listar = async (filtros = {}, solicitante) => {
   const query = {};
   if (solicitante && solicitante.rol !== 'admin') {
     query.usuario = solicitante.id;
@@ -59,10 +62,21 @@ const listar = (filtros = {}, solicitante) => {
   if (filtros.cancha) query.cancha = filtros.cancha;
   if (filtros.estado) query.estado = filtros.estado;
 
-  return Reserva.find(query)
-    .populate('cancha', 'nombre deporte ubicacion precioHora')
-    .populate('usuario', 'nombre email')
-    .sort({ fecha: 1, horaInicio: 1 });
+  const pagina = filtros.pagina || 1;
+  const limite = filtros.limite || LIMITE_POR_DEFECTO;
+
+  const [data, total] = await Promise.all([
+    Reserva.find(query)
+      .populate('cancha', 'nombre deporte ubicacion precioHora')
+      .populate('usuario', 'nombre email')
+      .sort({ fecha: 1, horaInicio: 1 })
+      .skip((pagina - 1) * limite)
+      .limit(limite)
+      .lean(), // objetos planos: menos memoria y serialización más rápida
+    Reserva.countDocuments(query),
+  ]);
+
+  return { data, total, pagina, limite, paginas: Math.ceil(total / limite) };
 };
 
 // Solo el dueño de la reserva o un admin pueden cancelarla
