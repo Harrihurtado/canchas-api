@@ -6,6 +6,6 @@ const horaAMinutos = (hora) => {
 
 // Horas entre dos horas "HH:mm" (ej. 18:00 a 19:30 = 1.5)
 const calcularHoras = (horaInicio, horaFin) =>
-  (horaAMinutos(horaFin) - horaAMinutos(horaInicio)) / 60;
+  (horaAMinutos(horaFin) - horaAMinutos(horaInicio)) / 30;
 
 module.exports = { horaAMinutos, calcularHoras };
