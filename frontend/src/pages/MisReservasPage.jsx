@@ -1,10 +1,13 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Alert from '../components/Alert';
+import { useAuth } from '../context/AuthContext';
 import { cancelarReserva, listarMisReservas } from '../services/reservas.service';
 import { ESTADOS, formatoPrecio, partesFecha } from '../utils/format';
 
 export default function MisReservasPage() {
+  const { usuario } = useAuth();
+  const esAdmin = usuario?.rol === 'admin';
   const [respuesta, setRespuesta] = useState(null);
   const [pagina, setPagina] = useState(1);
   const [error, setError] = useState('');
@@ -37,7 +40,7 @@ export default function MisReservasPage() {
   return (
     <section className="mis-reservas">
       <header className="encabezado">
-        <h1>Mis reservas</h1>
+        <h1>{esAdmin ? 'Todas las reservas' : 'Mis reservas'}</h1>
         {respuesta?.total > 0 && (
           <p className="subtitulo">
             {respuesta.total} {respuesta.total === 1 ? 'reserva' : 'reservas'} en total
@@ -50,9 +53,15 @@ export default function MisReservasPage() {
 
       {respuesta?.total === 0 && (
         <div className="vacio" id="reservas-vacio">
-          <p><strong>Todavía no tienes reservas.</strong></p>
-          <p>Busca una cancha y aparta tu primer turno.</p>
-          <Link to="/canchas" className="btn btn-primario">Ver canchas</Link>
+          <p><strong>{esAdmin ? 'Todavía no hay reservas.' : 'Todavía no tienes reservas.'}</strong></p>
+          {esAdmin ? (
+            <p>Las reservas de los clientes aparecerán aquí.</p>
+          ) : (
+            <>
+              <p>Busca una cancha y aparta tu primer turno.</p>
+              <Link to="/canchas" className="btn btn-primario">Ver canchas</Link>
+            </>
+          )}
         </div>
       )}
 
@@ -72,6 +81,7 @@ export default function MisReservasPage() {
                     <p className="reserva-detalle">
                       <span className="capitalizar">{f.diaSemana}</span>, {r.horaInicio} a {r.horaFin}
                     </p>
+                    {esAdmin && <p className="reserva-cliente">Reservó {r.usuario?.nombre}</p>}
                   </div>
                   <p className="reserva-total">{formatoPrecio(r.total)}</p>
                   <span className={`estado estado-${r.estado}`}>{ESTADOS[r.estado]}</span>
