@@ -220,6 +220,23 @@ a { color: var(--cesped); font-weight: 600; }
 .confirmar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: flex-end; font-size: 0.92rem; font-weight: 500; }
 .paginacion { display: flex; justify-content: center; align-items: center; gap: 16px; margin-top: 24px; color: var(--tinta-suave); }
 
+/* ---------- Administración ---------- */
+.rol { padding: 2px 8px; border-radius: 999px; background: rgba(255, 255, 255, 0.16); font-size: 0.75rem; font-weight: 600; }
+.encabezado-accion { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+.admin > .alerta { margin-bottom: 16px; }
+.panel-edicion { scroll-margin-top: 130px; background: var(--blanco); border-radius: var(--radio-tarjeta); box-shadow: var(--sombra); padding: 28px; margin-bottom: 24px; border-top: 4px solid var(--amarillo); animation: aparecer 0.25s ease-out; }
+.panel-edicion h2 { margin-bottom: 20px; }
+.acciones { display: flex; justify-content: flex-end; gap: 10px; }
+.lista-admin { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.admin-cancha-fila { display: grid; grid-template-columns: 96px minmax(0, 1fr) auto minmax(190px, auto); align-items: center; gap: 18px; background: var(--blanco); border-radius: 14px; padding: 12px 18px 12px 12px; box-shadow: var(--sombra); }
+.admin-miniatura { height: 58px; border-radius: 10px; overflow: hidden; }
+.admin-nombre { font: 700 1.3rem var(--fuente-titulo); }
+.admin-detalle { color: var(--tinta-suave); font-size: 0.92rem; }
+.admin-precio { font: 700 1.3rem var(--fuente-titulo); white-space: nowrap; }
+.admin-precio span { font: 400 0.85rem var(--fuente); color: var(--tinta-suave); }
+.admin-acciones { display: flex; justify-content: flex-end; gap: 6px; }
+.reserva-cliente { font-size: 0.88rem; color: var(--cesped); font-weight: 600; }
+
 /* ---------- Responsivo ---------- */
 @media (max-width: 900px) {
   .auth { grid-template-columns: 1fr; }
@@ -234,7 +251,7 @@ a { color: var(--cesped); font-weight: 600; }
 @media (max-width: 680px) {
   .navbar-interior { height: auto; flex-wrap: wrap; padding: 10px 16px; }
   .navbar-menu { width: 100%; justify-content: space-between; }
-  .usuario #usuario-nombre { display: none; }
+  .usuario #usuario-nombre, .usuario .rol { display: none; }
   .usuario { margin-left: 0; padding-left: 0; border: 0; }
   .contenedor { padding: 24px 16px 56px; }
   .fila { grid-template-columns: 1fr; }
@@ -243,6 +260,9 @@ a { color: var(--cesped); font-weight: 600; }
   .estado { grid-column: 2; }
   .reserva-acciones { grid-column: 1 / -1; justify-self: stretch; }
   .reserva-acciones .btn-cancelar { width: 100%; }
+  .admin-cancha-fila { grid-template-columns: 72px 1fr; }
+  .admin-precio, .admin-acciones { grid-column: 1 / -1; justify-content: flex-start; }
+  .acciones { flex-direction: column-reverse; }
 }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }

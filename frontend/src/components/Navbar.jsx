@@ -32,10 +32,14 @@ export default function Navbar() {
         </Link>
         <nav className="navbar-menu">
             <NavLink to="/canchas" end id="nav-canchas">Canchas</NavLink>
-            <NavLink to="/mis-reservas" id="nav-reservas">Mis reservas</NavLink>
+            <NavLink to="/mis-reservas" id="nav-reservas">{usuario.rol === 'admin' ? 'Reservas' : 'Mis reservas'}</NavLink>
+            {usuario.rol === 'admin' && (
+              <NavLink to="/admin/canchas" id="nav-admin">Administrar</NavLink>
+            )}
             <span className="usuario">
               <span className="avatar" aria-hidden="true">{iniciales}</span>
               <span id="usuario-nombre">{usuario.nombre}</span>
+              {usuario.rol === 'admin' && <span className="rol" id="usuario-rol">Admin</span>}
             </span>
             <button type="button" className="btn-salir" id="btn-logout" onClick={salir}>
               Cerrar sesión
