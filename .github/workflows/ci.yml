@@ -1,0 +1,143 @@
+# Integración continua de CanchaYa API
+# En cada push a main/develop y en cada Pull Request:
+#   1) Auditoría de seguridad de dependencias
+#   2) Pruebas unitarias + integración con Jest (con cobertura)
+#   3) Pruebas de API con la colección de Postman ejecutada por Newman
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  workflow_dispatch: # permite ejecutarlo manualmente desde la pestaña Actions
+
+# Mínimo privilegio: el pipeline solo necesita leer el código
+permissions:
+  contents: read
+
+# Si llega un push nuevo a la misma rama, cancela la ejecución anterior
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: '22'
+  NODE_ENV: test
+  # BD efímera: un contenedor de MongoDB que solo existe durante el pipeline
+  MONGODB_URI: mongodb://localhost:27017/canchas_test
+  JWT_SECRET: ${{ secrets.JWT_SECRET }}
+  JWT_EXPIRES_IN: 1h
+
+jobs:
+  jest:
+    name: Jest (unitarias + integración)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    services:
+      mongodb:
+        image: mongo:7
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd "mongosh --quiet --eval 'db.runCommand({ ping: 1 })'"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    steps:
+      - name: Descargar el código
+        uses: actions/checkout@v4
+
+      - name: Instalar Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Verificar que existe el secreto JWT_SECRET
+        run: |
+          if [ -z "$JWT_SECRET" ]; then
+            echo "::error::Falta el secreto JWT_SECRET en Settings > Secrets and variables > Actions"
+            exit 1
+          fi
+
+      - name: Instalar dependencias (npm ci)
+        run: npm ci
+
+      - name: Auditoría de seguridad de dependencias de producción
+        run: npm audit --omit=dev --audit-level=high
+
+      - name: Ejecutar pruebas con cobertura
+        run: npm run test:coverage
+
+      - name: Publicar reporte de cobertura
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reporte-cobertura
+          path: coverage/lcov-report
+          retention-days: 14
+
+  newman:
+    name: Newman (colección de Postman)
+    runs-on: ubuntu-latest
+    needs: jest # solo se ejecuta si Jest pasó
+    timeout-minutes: 15
+
+    services:
+      mongodb:
+        image: mongo:7
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd "mongosh --quiet --eval 'db.runCommand({ ping: 1 })'"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    steps:
+      - name: Descargar el código
+        uses: actions/checkout@v4
+
+      - name: Instalar Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Instalar dependencias (npm ci)
+        run: npm ci
+
+      - name: Cargar datos de prueba (usuario admin y canchas)
+        run: node scripts/seed.js
+
+      - name: Levantar la API en segundo plano
+        run: |
+          node src/server.js > api.log 2>&1 &
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:3000/api/health > /dev/null; then
+              echo "API lista en $i segundos"
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "::error::La API no respondió en 30 segundos"
+          cat api.log
+          exit 1
+
+      - name: Ejecutar la colección de Postman con Newman
+        run: npm run test:api
+
+      - name: Publicar reporte de Newman
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reporte-newman
+          path: reports/newman
+          retention-days: 14
+
+      - name: Mostrar el log de la API si algo falló
+        if: failure()
+        run: cat api.log
