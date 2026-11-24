@@ -9,11 +9,16 @@ export default function LoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  if (usuario) return <Navigate to="/canchas" replace />;
+  // Si llegó aquí desde una página privada, vuelve a ella al iniciar sesión
+  const destino = location.state?.desde || '/canchas';
+
+  // Con sesión iniciada se redirige al destino. Antes iba siempre a /canchas y, como esta página
+  // se vuelve a dibujar al iniciar sesión, le ganaba a la redirección correcta (defecto hallado con Selenium).
+  if (usuario) return <Navigate to={destino} replace />;
 
   const entrar = async (email, password) => {
     await iniciarSesion(email, password);
-    navigate(location.state?.desde || '/canchas', { replace: true });
+    navigate(destino, { replace: true });
   };
 
   return (

@@ -46,6 +46,13 @@ describe('Páginas de acceso', () => {
     expect(await screen.findByText('Mis reservas')).toBeInTheDocument();
   });
 
+  test('regresión: si la sesión se inicia mientras está en el login, respeta la página de origen', () => {
+    // Simula el re-render que ocurre al iniciar sesión: el login se dibuja con un usuario ya conectado
+    useAuth.mockReturnValue({ usuario: { nombre: 'Ana' } });
+    renderApp('/login', { desde: '/mis-reservas' });
+    expect(screen.getByText('Mis reservas')).toBeInTheDocument();
+  });
+
   test('con la sesión ya iniciada, el login redirige al catálogo', () => {
     useAuth.mockReturnValue({ usuario: { nombre: 'Ana' } });
     renderApp('/login');
