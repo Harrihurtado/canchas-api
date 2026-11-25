@@ -1,0 +1,16 @@
+{
+  "name": "canchaya-e2e",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Pruebas de interfaz de CanchaYa con Selenium WebDriver y Page Object Model",
+  "scripts": {
+    "test": "jest --runInBand",
+    "test:headless": "cross-env HEADLESS=true jest --runInBand",
+    "test:humo": "jest --runInBand -t @humo"
+  },
+  "devDependencies": {
+    "cross-env": "^10.1.0",
+    "jest": "^30.5.2",
+    "selenium-webdriver": "^4.54.0"
+  }
+}

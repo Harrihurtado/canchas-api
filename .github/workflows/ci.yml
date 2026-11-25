@@ -3,6 +3,8 @@
 #   1) Auditoría de seguridad de dependencias
 #   2) Pruebas unitarias + integración con Jest (con cobertura)
 #   3) Pruebas de API con la colección de Postman ejecutada por Newman
+#   4) Frontend: pruebas de componentes con Jest y compilación de producción
+#   5) E2E: pruebas de UI con Selenium WebDriver (Page Object Model) en Chrome headless
 name: CI
 
 on:
@@ -141,3 +143,109 @@ jobs:
       - name: Mostrar el log de la API si algo falló
         if: failure()
         run: cat api.log
+
+  frontend:
+    name: Frontend (Jest de componentes + build)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: frontend
+
+    steps:
+      - name: Descargar el código
+        uses: actions/checkout@v4
+
+      - name: Instalar Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Instalar dependencias (npm ci)
+        run: npm ci
+
+      - name: Auditoría de dependencias de producción
+        run: npm audit --omit=dev --audit-level=high
+
+      - name: Pruebas de componentes con cobertura
+        run: npm run test:coverage
+
+      - name: Compilar para producción
+        run: npm run build
+
+      - name: Publicar reporte de cobertura del frontend
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reporte-cobertura-frontend
+          path: frontend/coverage/lcov-report
+          retention-days: 14
+
+  e2e:
+    name: E2E (Selenium + Page Object Model)
+    runs-on: ubuntu-latest
+    needs: [jest, frontend] # la UI se prueba solo si la lógica y los componentes ya pasaron
+    timeout-minutes: 20
+    env:
+      NODE_ENV: development
+      MONGODB_URI: mongodb://localhost:27017/canchas_e2e
+      HEADLESS: 'true'
+      BROWSER: chrome
+
+    services:
+      mongodb:
+        image: mongo:7
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd "mongosh --quiet --eval 'db.runCommand({ ping: 1 })'"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    steps:
+      - name: Descargar el código
+        uses: actions/checkout@v4
+
+      - name: Instalar Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Instalar dependencias (API, frontend y e2e)
+        run: |
+          npm ci
+          npm ci --prefix frontend
+          npm ci --prefix e2e
+
+      - name: Cargar datos de prueba y levantar la API
+        run: |
+          node scripts/seed.js
+          node src/server.js > api.log 2>&1 &
+          npx wait-on --timeout 30000 http-get://localhost:3000/api/health
+
+      - name: Levantar el frontend
+        working-directory: frontend
+        run: |
+          npx vite --host localhost --port 5173 --strictPort > ../frontend.log 2>&1 &
+          npx wait-on --timeout 60000 http-get://localhost:5173
+
+      - name: Ejecutar las pruebas de Selenium
+        working-directory: e2e
+        run: npx jest --runInBand
+
+      - name: Publicar capturas de las pruebas fallidas
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: capturas-selenium
+          path: e2e/capturas
+          retention-days: 14
+
+      - name: Mostrar los logs si algo falló
+        if: failure()
+        run: |
+          cat api.log
+          cat frontend.log

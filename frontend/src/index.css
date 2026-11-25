@@ -1,0 +1,269 @@
+/* CanchaYa — identidad: líneas de cal sobre superficies de juego.
+   Tipografía condensada de marcador deportivo para títulos, Barlow para el texto. */
+:root {
+  --cesped: #1f6b45;
+  --cesped-oscuro: #134a2f;
+  --tinta: #15211b;
+  --tinta-suave: #56645c;
+  --papel: #f3f6f1;
+  --blanco: #ffffff;
+  --linea: #dce4dd;
+  --amarillo: #f4c430;          /* botón principal: amarillo de marcador */
+  --amarillo-hover: #e2b21c;
+  --rojo: #b8321e;
+  --rojo-claro: #fcebe7;
+  --exito-claro: #e2f1e7;
+
+  --arena: #cfa65a;
+  --madera: #b97b43;
+  --pista: #2f6aa0;
+
+  --fuente: 'Barlow', system-ui, sans-serif;
+  --fuente-titulo: 'Barlow Condensed', 'Barlow', system-ui, sans-serif;
+  --radio-tarjeta: 16px;
+  --radio-control: 10px;
+  --sombra: 0 1px 2px rgba(21, 33, 27, 0.06), 0 8px 24px -12px rgba(21, 33, 27, 0.18);
+
+  font-family: var(--fuente);
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--tinta);
+  background: var(--papel);
+  -webkit-font-smoothing: antialiased;
+}
+
+* { box-sizing: border-box; }
+body { margin: 0; min-height: 100vh; }
+h1, h2, h3 { font-family: var(--fuente-titulo); font-weight: 700; line-height: 1.05; margin: 0; letter-spacing: 0.005em; }
+h1 { font-size: clamp(2rem, 4vw, 2.75rem); }
+h2 { font-size: 1.6rem; }
+p { margin: 0; }
+a { color: var(--cesped); font-weight: 600; }
+:focus-visible { outline: 3px solid var(--amarillo); outline-offset: 2px; }
+
+/* ---------- Botones ---------- */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  min-height: 44px; padding: 0 20px; border: 0; border-radius: var(--radio-control);
+  font: 600 1rem var(--fuente); text-decoration: none; cursor: pointer;
+  transition: background-color 0.15s, transform 0.1s;
+}
+.btn:active { transform: translateY(1px); }
+.btn:disabled { opacity: 0.6; cursor: progress; }
+.btn-primario { background: var(--amarillo); color: var(--tinta); }
+.btn-primario:hover { background: var(--amarillo-hover); }
+.btn-secundario { background: var(--blanco); color: var(--tinta); border: 1px solid var(--linea); }
+.btn-secundario:hover:not(:disabled) { border-color: var(--tinta-suave); }
+.btn-peligro { background: var(--rojo); color: var(--blanco); min-height: 36px; padding: 0 14px; }
+.btn-peligro:hover { background: #962816; }
+.btn-texto { background: none; color: var(--tinta-suave); min-height: 36px; padding: 0 10px; }
+.btn-texto:hover { color: var(--rojo); background: var(--rojo-claro); }
+.btn-ancho { width: 100%; }
+
+/* ---------- Barra superior ---------- */
+.navbar { background: var(--cesped-oscuro); color: var(--blanco); position: sticky; top: 0; z-index: 10; }
+.navbar-interior { max-width: 1120px; margin: 0 auto; padding: 0 20px; height: 64px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.logo { display: inline-flex; align-items: center; gap: 10px; color: var(--blanco); text-decoration: none; font: 700 1.6rem var(--fuente-titulo); }
+.logo svg { width: 28px; height: 20px; fill: none; stroke: var(--amarillo); stroke-width: 1.8; }
+.navbar-menu { display: flex; align-items: center; gap: 6px; }
+.navbar-menu a { color: rgba(255, 255, 255, 0.78); text-decoration: none; font-weight: 500; padding: 8px 12px; border-radius: 8px; }
+.navbar-menu a:hover { color: var(--blanco); background: rgba(255, 255, 255, 0.08); }
+.navbar-menu a.active { color: var(--blanco); background: rgba(255, 255, 255, 0.14); }
+.usuario { display: inline-flex; align-items: center; gap: 8px; margin-left: 12px; padding-left: 16px; border-left: 1px solid rgba(255, 255, 255, 0.2); font-weight: 500; }
+.avatar { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; background: var(--amarillo); color: var(--tinta); font-size: 0.8rem; font-weight: 700; }
+.btn-salir { background: none; border: 0; color: rgba(255, 255, 255, 0.7); font: 500 0.9rem var(--fuente); cursor: pointer; padding: 8px; border-radius: 8px; }
+.btn-salir:hover { color: var(--blanco); background: rgba(255, 255, 255, 0.08); }
+
+.contenedor { max-width: 1120px; margin: 0 auto; padding: 40px 20px 72px; }
+.encabezado { margin-bottom: 24px; }
+.subtitulo { color: var(--tinta-suave); margin-top: 8px; font-size: 1.05rem; }
+.cargando { color: var(--tinta-suave); padding: 32px 0; }
+
+/* ---------- Alertas ---------- */
+.alerta { padding: 12px 14px; border-radius: var(--radio-control); font-weight: 500; }
+.alerta ul { margin: 6px 0 0; padding-left: 20px; font-weight: 400; }
+.alerta-error { background: var(--rojo-claro); color: var(--rojo); border-left: 4px solid var(--rojo); }
+.alerta-exito { background: var(--exito-claro); color: var(--cesped-oscuro); border-left: 4px solid var(--cesped); }
+.contenedor > section > .alerta, .mis-reservas > .alerta { margin-bottom: 16px; }
+
+/* ---------- Formularios ---------- */
+.formulario { display: flex; flex-direction: column; gap: 18px; }
+.campo { display: flex; flex-direction: column; gap: 6px; border: 0; margin: 0; padding: 0; min-width: 0; }
+.campo label, .campo legend { font-weight: 600; font-size: 0.92rem; padding: 0; }
+.campo small, .opcional { color: var(--tinta-suave); font-size: 0.85rem; font-weight: 400; }
+.formulario input, .formulario select {
+  width: 100%; min-height: 46px; padding: 0 14px; border: 1px solid var(--linea); border-radius: var(--radio-control);
+  font: 400 1rem var(--fuente); color: var(--tinta); background: var(--blanco);
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.formulario input::placeholder { color: #9aa59f; }
+.formulario input:focus, .formulario select:focus { outline: none; border-color: var(--cesped); box-shadow: 0 0 0 3px rgba(31, 107, 69, 0.18); }
+.fila { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.con-accion { position: relative; }
+.con-accion input { padding-right: 84px; }
+.ver-password { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); background: none; border: 0; color: var(--cesped); font: 600 0.85rem var(--fuente); padding: 8px 10px; border-radius: 6px; cursor: pointer; }
+.ver-password:hover { background: var(--exito-claro); }
+
+/* ---------- Pantallas de acceso ---------- */
+.auth { min-height: 100vh; display: grid; grid-template-columns: 1.1fr 1fr; }
+.auth-cancha { position: relative; background: var(--cesped); overflow: hidden; display: flex; flex-direction: column; gap: 32px; padding: 48px; color: var(--blanco); }
+.auth-cancha::before { /* franjas de césped cortado */
+  content: ''; position: absolute; inset: 0;
+  background: repeating-linear-gradient(90deg, transparent 0 64px, rgba(255, 255, 255, 0.045) 64px 128px);
+}
+.auth-court.court { position: relative; flex: 1; min-height: 0; width: 100%; height: auto; background: none; }
+.auth-court rect, .auth-court line, .auth-court circle { stroke-width: 0.9; }
+.auth-mensaje { position: relative; max-width: 34ch; }
+.auth-lema { font: 700 2.4rem/1 var(--fuente-titulo); margin-bottom: 12px; }
+.auth-mensaje p:last-child { color: rgba(255, 255, 255, 0.82); }
+.auth-panel { display: flex; flex-direction: column; justify-content: center; width: 100%; max-width: 460px; margin: 0 auto; padding: 48px 28px; }
+.auth-marca { font: 700 1.5rem var(--fuente-titulo); color: var(--cesped); margin-bottom: 32px; }
+.auth-panel .subtitulo { margin-bottom: 28px; }
+.auth-panel #registro-exito { margin-bottom: 18px; }
+.pie { margin-top: 24px; color: var(--tinta-suave); }
+
+/* ---------- Superficies de juego ---------- */
+.court { display: block; width: 100%; height: 100%; }
+.court-futbol { background: var(--cesped); }
+.court-voleibol { background: var(--arena); }
+.court-baloncesto { background: var(--madera); }
+.court-tenis { background: var(--pista); }
+
+/* ---------- Catálogo ---------- */
+.filtros { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+.chip {
+  min-height: 40px; padding: 0 16px; border-radius: 999px; border: 1px solid var(--linea);
+  background: var(--blanco); color: var(--tinta); font: 500 0.95rem var(--fuente); cursor: pointer;
+}
+.chip:hover { border-color: var(--tinta-suave); }
+.chip[aria-pressed='true'] { background: var(--tinta); border-color: var(--tinta); color: var(--blanco); }
+.conteo { color: var(--tinta-suave); font-size: 0.92rem; margin-bottom: 14px; }
+
+.grilla { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+.cancha-card { display: flex; flex-direction: column; background: var(--blanco); border-radius: var(--radio-tarjeta); overflow: hidden; box-shadow: var(--sombra); }
+.cancha-portada { position: relative; height: 132px; }
+.etiqueta {
+  display: inline-block; padding: 4px 10px; border-radius: 999px;
+  background: var(--tinta); color: var(--blanco); font-size: 0.8rem; font-weight: 600;
+}
+.cancha-portada .etiqueta { position: absolute; left: 14px; top: 14px; background: rgba(21, 33, 27, 0.78); }
+.cancha-cuerpo { display: flex; flex-direction: column; gap: 4px; padding: 18px 18px 20px; flex: 1; }
+.cancha-nombre { font-size: 1.55rem; }
+.cancha-ubicacion { color: var(--tinta-suave); }
+.cancha-datos { display: flex; flex-wrap: wrap; gap: 6px 20px; margin: 10px 0 0; }
+.cancha-datos div { display: flex; flex-direction: column; }
+.cancha-datos dt { font-size: 0.8rem; color: var(--tinta-suave); }
+.cancha-datos dd { margin: 0; font-weight: 600; }
+.cancha-pie { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: auto; padding-top: 18px; }
+.cancha-precio { font: 700 1.6rem var(--fuente-titulo); }
+.cancha-precio span { font: 400 0.85rem var(--fuente); color: var(--tinta-suave); }
+
+.esqueleto { height: 300px; background: linear-gradient(90deg, #e9eee9 25%, #f5f8f5 50%, #e9eee9 75%); background-size: 200% 100%; animation: brillo 1.2s infinite; }
+@keyframes brillo { to { background-position: -200% 0; } }
+
+.vacio { background: var(--blanco); border: 1px dashed var(--linea); border-radius: var(--radio-tarjeta); padding: 40px 24px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.vacio p:last-of-type { color: var(--tinta-suave); margin-bottom: 14px; }
+
+/* ---------- Reservar ---------- */
+.volver { display: inline-block; margin-bottom: 20px; text-decoration: none; }
+.volver::before { content: '‹ '; }
+.reservar-grid { display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); gap: 32px; align-items: start; }
+.ficha { background: var(--blanco); border-radius: var(--radio-tarjeta); overflow: hidden; box-shadow: var(--sombra); position: sticky; top: 88px; }
+.ficha-portada { height: 200px; }
+.ficha-cuerpo { padding: 22px; display: flex; flex-direction: column; gap: 6px; }
+.ficha-cuerpo .etiqueta { align-self: flex-start; margin-bottom: 4px; }
+.reservar-form { background: var(--blanco); border-radius: var(--radio-tarjeta); box-shadow: var(--sombra); padding: 28px; }
+.reservar-form h2 { margin-bottom: 20px; }
+
+.dias { display: flex; gap: 8px; overflow-x: auto; padding: 4px 2px 10px; scroll-snap-type: x mandatory; }
+.dia {
+  flex: 0 0 64px; display: flex; flex-direction: column; align-items: center; padding: 10px 0;
+  border: 1px solid var(--linea); border-radius: 12px; background: var(--blanco); cursor: pointer;
+  font-family: var(--fuente); color: var(--tinta); scroll-snap-align: start;
+}
+.dia:hover { border-color: var(--tinta-suave); }
+.dia[aria-checked='true'] { background: var(--cesped); border-color: var(--cesped); color: var(--blanco); }
+.dia-semana, .dia-mes { font-size: 0.78rem; opacity: 0.75; }
+.dia-numero { font: 700 1.6rem/1.1 var(--fuente-titulo); }
+
+.resumen { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 16px 18px; border-radius: 12px; background: var(--papel); border: 1px solid var(--linea); }
+.resumen-dia { font-weight: 600; }
+.resumen-dia::first-letter { text-transform: uppercase; }
+.resumen-detalle { color: var(--tinta-suave); font-size: 0.92rem; }
+.resumen strong { font: 700 1.9rem var(--fuente-titulo); }
+
+.confirmacion { margin-bottom: 20px; padding: 16px 18px; border-radius: 12px; background: var(--exito-claro); border-left: 4px solid var(--cesped); color: var(--cesped-oscuro); animation: aparecer 0.35s ease-out; }
+.confirmacion-titulo { font: 700 1.3rem var(--fuente-titulo); }
+.confirmacion a { display: inline-block; margin-top: 6px; }
+@keyframes aparecer { from { opacity: 0; transform: translateY(-6px); } }
+
+/* ---------- Mis reservas ---------- */
+.lista-reservas { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
+.reserva-fila {
+  display: grid; grid-template-columns: 64px minmax(0, 1fr) auto auto minmax(110px, auto); align-items: center; gap: 18px;
+  background: var(--blanco); border-radius: 14px; padding: 14px 18px; box-shadow: var(--sombra);
+}
+.reserva-cancelada { opacity: 0.62; }
+.reserva-fecha { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 64px; border-radius: 12px; background: var(--cesped); color: var(--blanco); }
+.reserva-cancelada .reserva-fecha { background: var(--tinta-suave); }
+.reserva-dia { font: 700 1.7rem/1 var(--fuente-titulo); }
+.reserva-mes { font-size: 0.8rem; }
+.reserva-cancha { font: 700 1.3rem var(--fuente-titulo); }
+.reserva-detalle { color: var(--tinta-suave); }
+.capitalizar { text-transform: capitalize; }
+.reserva-total { font: 700 1.3rem var(--fuente-titulo); }
+.estado { justify-self: start; padding: 4px 10px; border-radius: 999px; font-size: 0.82rem; font-weight: 600; }
+.estado-pendiente { background: #fdf1cf; color: #7a5800; }
+.estado-confirmada { background: var(--exito-claro); color: var(--cesped-oscuro); }
+.estado-cancelada { background: #e8ebe9; color: var(--tinta-suave); }
+.reserva-acciones { justify-self: end; }
+.confirmar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: flex-end; font-size: 0.92rem; font-weight: 500; }
+.paginacion { display: flex; justify-content: center; align-items: center; gap: 16px; margin-top: 24px; color: var(--tinta-suave); }
+
+/* ---------- Administración ---------- */
+.rol { padding: 2px 8px; border-radius: 999px; background: rgba(255, 255, 255, 0.16); font-size: 0.75rem; font-weight: 600; }
+.encabezado-accion { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+.admin > .alerta { margin-bottom: 16px; }
+.panel-edicion { scroll-margin-top: 130px; background: var(--blanco); border-radius: var(--radio-tarjeta); box-shadow: var(--sombra); padding: 28px; margin-bottom: 24px; border-top: 4px solid var(--amarillo); animation: aparecer 0.25s ease-out; }
+.panel-edicion h2 { margin-bottom: 20px; }
+.acciones { display: flex; justify-content: flex-end; gap: 10px; }
+.lista-admin { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.admin-cancha-fila { display: grid; grid-template-columns: 96px minmax(0, 1fr) auto minmax(190px, auto); align-items: center; gap: 18px; background: var(--blanco); border-radius: 14px; padding: 12px 18px 12px 12px; box-shadow: var(--sombra); }
+.admin-miniatura { height: 58px; border-radius: 10px; overflow: hidden; }
+.admin-nombre { font: 700 1.3rem var(--fuente-titulo); }
+.admin-detalle { color: var(--tinta-suave); font-size: 0.92rem; }
+.admin-precio { font: 700 1.3rem var(--fuente-titulo); white-space: nowrap; }
+.admin-precio span { font: 400 0.85rem var(--fuente); color: var(--tinta-suave); }
+.admin-acciones { display: flex; justify-content: flex-end; gap: 6px; }
+.reserva-cliente { font-size: 0.88rem; color: var(--cesped); font-weight: 600; }
+
+/* ---------- Responsivo ---------- */
+@media (max-width: 900px) {
+  .auth { grid-template-columns: 1fr; }
+  .auth-cancha { min-height: 220px; padding: 24px; }
+  .auth-cancha { flex-direction: row; align-items: center; gap: 20px; }
+  .auth-court.court { flex: 0 0 42%; height: 150px; }
+  .auth-lema { font-size: 1.8rem; }
+  .auth-mensaje p:last-child { display: none; }
+  .reservar-grid { grid-template-columns: 1fr; }
+  .ficha { position: static; }
+}
+@media (max-width: 680px) {
+  .navbar-interior { height: auto; flex-wrap: wrap; padding: 10px 16px; }
+  .navbar-menu { width: 100%; justify-content: space-between; }
+  .usuario #usuario-nombre, .usuario .rol { display: none; }
+  .usuario { margin-left: 0; padding-left: 0; border: 0; }
+  .contenedor { padding: 24px 16px 56px; }
+  .fila { grid-template-columns: 1fr; }
+  .reserva-fila { grid-template-columns: 56px 1fr auto; row-gap: 8px; }
+  .reserva-fecha { height: 56px; }
+  .estado { grid-column: 2; }
+  .reserva-acciones { grid-column: 1 / -1; justify-self: stretch; }
+  .reserva-acciones .btn-cancelar { width: 100%; }
+  .admin-cancha-fila { grid-template-columns: 72px 1fr; }
+  .admin-precio, .admin-acciones { grid-column: 1 / -1; justify-content: flex-start; }
+  .acciones { flex-direction: column-reverse; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
