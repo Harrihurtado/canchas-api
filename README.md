@@ -62,6 +62,11 @@ docs/            Informe de pruebas de rendimiento
 | `npm run test:coverage` | Todas las pruebas de Jest con reporte de cobertura |
 | `npm run test:api` | Colección de Postman con Newman (requiere la API corriendo y `npm run seed`) |
 
+Pruebas de la interfaz: `cd e2e && npm test` (Selenium con Page Object Model, ver `e2e/README.md`).
+
+Regresión: `npm run regresion` (suite completa con registro en `docs/regresion/`) o `npm run regresion:humo`.
+La estrategia está en `docs/estrategia-regresion.md`.
+
 Las pruebas de rendimiento se ejecutan con JMeter en modo consola (ver `docs/pruebas-rendimiento.md`).
 
 ## Integración continua

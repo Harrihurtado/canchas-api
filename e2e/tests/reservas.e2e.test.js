@@ -28,7 +28,7 @@ describe('Reservas desde la interfaz (HU-20)', () => {
   });
 
   afterAll(async () => {
-    await desactivarCancha(cancha._id);
+    if (cancha) await desactivarCancha(cancha._id); // si la preparación falló, no hay nada que limpiar
     await driver?.quit();
   });
 
