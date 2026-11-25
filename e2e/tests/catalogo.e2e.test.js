@@ -17,7 +17,7 @@ describe('Catálogo de canchas (HU-19)', () => {
   });
 
   afterAll(async () => {
-    await desactivarCancha(canchaTenis._id);
+    if (canchaTenis) await desactivarCancha(canchaTenis._id); // si la preparación falló, no hay nada que limpiar
     await driver?.quit();
   });
 
